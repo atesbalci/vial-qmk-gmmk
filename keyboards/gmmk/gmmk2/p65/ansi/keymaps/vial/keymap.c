@@ -43,11 +43,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______,  _______,  _______,                                QK_BOOT,                                _______,  _______,  RGB_RMOD,  RGB_VAD,  RGB_MOD)
 };
 
+const int capsKeyIndex = 30;
+const int capsBlinkInterval = 250;
+
+static uint16_t key_timer;
+
+void keyboard_post_init_user(void) {
+    key_timer = timer_read();
+}
+
 void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    const int capsKeyIndex = 30;
     if (g_led_config.flags[capsKeyIndex] & LED_FLAG_KEYLIGHT) {
         if (host_keyboard_led_state().caps_lock) {
-            rgb_matrix_set_color(capsKeyIndex, RGB_CYAN);
+            float value = (((float) ((timer_elapsed(key_timer) % (capsBlinkInterval * 2)) - capsBlinkInterval)) / ((float) capsBlinkInterval));
+            value = value < 0 ? -value : value;
+            int color[] = {RGB_YELLOW};
+            for (int i = 0; i < 3; i++) color[i] = (int) (color[i] * value);
+            rgb_matrix_set_color(capsKeyIndex, color[0], color[1], color[2]);
         }
         else {
             rgb_matrix_set_color(capsKeyIndex, RGB_OFF);
