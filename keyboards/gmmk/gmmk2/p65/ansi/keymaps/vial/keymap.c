@@ -43,26 +43,73 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______,  _______,  _______,                                QK_BOOT,                                _______,  _______,  RGB_RMOD,  RGB_VAD,  RGB_MOD)
 };
 
-const int capsKeyIndex = 30;
-const int capsBlinkInterval = 250;
+const uint8_t capsKeyIndex = 30;
+const uint8_t capsBlinkInterval = 250;
+
+const char numberKeys[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+const uint8_t numberKeyCount = 10;
+
+const char alphabetKeys[] = {16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                            31, 32, 33, 34, 35, 36, 37, 38, 39,
+                            45, 46, 47, 48, 49, 50, 51};
+const uint8_t alphabetKeyCount = 26;
+
+const char miscCharKeys[] = {11, 12, 13, 14, 15, 26, 27, 28, 29, 40, 41, 42, 52, 53, 54, 61};
+const uint8_t miscCharKeyCount = 16;
+
+const char modKeys[] = {44, 55, 58, 59, 60, 62, 63};
+const uint8_t modKeyCount = 7;
+
+const char arrowKeys[] = {0, 56, 64, 65, 66, 43, 57};
+const uint8_t arrowKeyCount = 7;
 
 static uint16_t key_timer;
+
+void setKeySetColor(const char *keys, uint16_t keyCount, uint16_t r, uint16_t g, uint16_t b) {
+    for (uint16_t i = 0; i < keyCount; i++)
+    {
+        rgb_matrix_set_color(keys[i], r, g, b);
+    }    
+}
 
 void keyboard_post_init_user(void) {
     key_timer = timer_read();
 }
 
 void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    setKeySetColor(numberKeys, numberKeyCount, RGB_YELLOW);
+    setKeySetColor(miscCharKeys, miscCharKeyCount, RGB_MAGENTA);
+    setKeySetColor(modKeys, modKeyCount, RGB_GREEN);
+    setKeySetColor(arrowKeys, arrowKeyCount, RGB_BLUE);
+
     if (g_led_config.flags[capsKeyIndex] & LED_FLAG_KEYLIGHT) {
         if (host_keyboard_led_state().caps_lock) {
             float value = (((float) ((timer_elapsed(key_timer) % (capsBlinkInterval * 2)) - capsBlinkInterval)) / ((float) capsBlinkInterval));
             value = value < 0 ? -value : value;
-            int color[] = {RGB_YELLOW};
-            for (int i = 0; i < 3; i++) color[i] = (int) (color[i] * value);
-            rgb_matrix_set_color(capsKeyIndex, color[0], color[1], color[2]);
-        }
-        else {
+            uint8_t capsLockColor[] = {RGB_YELLOW};
+            for (uint8_t i = 0; i < 3; i++) capsLockColor[i] = (uint8_t) (capsLockColor[i] * value);
+            rgb_matrix_set_color(capsKeyIndex, capsLockColor[0], capsLockColor[1], capsLockColor[2]);
+
+            uint8_t alphabetColor[] = {RGB_CYAN};
+            for (uint8_t i = 0; i < 3; i++) alphabetColor[i] = (uint8_t) (alphabetColor[i] * value);
+            setKeySetColor(alphabetKeys, alphabetKeyCount, alphabetColor[0], alphabetColor[1], alphabetColor[2]);
+        } else {
             rgb_matrix_set_color(capsKeyIndex, RGB_OFF);
+        }
+    }
+
+    if (get_highest_layer(layer_state) > 0) {
+        uint8_t layer = get_highest_layer(layer_state);
+        for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+            for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
+                uint8_t index = g_led_config.matrix_co[row][col];
+
+                if (keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS) {
+                    rgb_matrix_set_color(index, RGB_CYAN);
+                } else {
+                    rgb_matrix_set_color(index, RGB_OFF);
+                }
+            }
         }
     }
 }
