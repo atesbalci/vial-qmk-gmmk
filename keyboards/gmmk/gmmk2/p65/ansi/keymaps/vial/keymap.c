@@ -43,6 +43,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______,  _______,  _______,                                QK_BOOT,                                _______,  _______,  RGB_RMOD,  RGB_VAD,  RGB_MOD)
 };
 
+const uint8_t escKeyIndex = 0;
 const uint8_t capsKeyIndex = 30;
 const uint8_t capsBlinkInterval = 250;
 
@@ -60,8 +61,8 @@ const uint8_t miscCharKeyCount = 16;
 const char modKeys[] = {44, 55, 58, 59, 60, 62, 63};
 const uint8_t modKeyCount = 7;
 
-const char arrowKeys[] = {0, 56, 64, 65, 66, 43, 57};
-const uint8_t arrowKeyCount = 7;
+const char arrowKeys[] = {56, 64, 65, 66, 43, 57};
+const uint8_t arrowKeyCount = 6;
 
 static uint16_t key_timer;
 
@@ -80,7 +81,8 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     setKeySetColor(numberKeys, numberKeyCount, RGB_YELLOW);
     setKeySetColor(miscCharKeys, miscCharKeyCount, RGB_MAGENTA);
     setKeySetColor(modKeys, modKeyCount, RGB_GREEN);
-    setKeySetColor(arrowKeys, arrowKeyCount, RGB_BLUE);
+    setKeySetColor(arrowKeys, arrowKeyCount, RGB_CYAN);
+    rgb_matrix_set_color(escKeyIndex, RGB_RED);
 
     if (g_led_config.flags[capsKeyIndex] & LED_FLAG_KEYLIGHT) {
         if (host_keyboard_led_state().caps_lock) {
