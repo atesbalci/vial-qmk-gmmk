@@ -89,6 +89,16 @@ void keyboard_post_init_user(void) {
     user_config.raw = eeconfig_read_user();
 }
 
+float getBreathingEffectMultiplier(void) {    
+    float value = (((float) ((timer_elapsed(key_timer) % (capsBlinkInterval * 2)) - capsBlinkInterval)) / ((float) capsBlinkInterval));
+    value = value < 0 ? -value : value;
+    return value;
+}
+
+void multiplyColor(uint8_t* color, float multiplier) {
+    for (uint8_t i = 0; i < 3; i++) color[i] = (uint8_t) (color[i] * multiplier);
+}
+
 void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     if (user_config.per_key_active) {
         setKeySetColor(numberKeys, numberKeyCount, RGB_YELLOW);
@@ -100,14 +110,13 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     if (g_led_config.flags[capsKeyIndex] & LED_FLAG_KEYLIGHT) {
         if (host_keyboard_led_state().caps_lock) {
-            float value = (((float) ((timer_elapsed(key_timer) % (capsBlinkInterval * 2)) - capsBlinkInterval)) / ((float) capsBlinkInterval));
-            value = value < 0 ? -value : value;
+            float value = getBreathingEffectMultiplier();
             uint8_t capsLockColor[] = {RGB_YELLOW};
-            for (uint8_t i = 0; i < 3; i++) capsLockColor[i] = (uint8_t) (capsLockColor[i] * value);
+            multiplyColor(capsLockColor, value);
             rgb_matrix_set_color(capsKeyIndex, capsLockColor[0], capsLockColor[1], capsLockColor[2]);
 
             uint8_t alphabetColor[] = {RGB_CYAN};
-            for (uint8_t i = 0; i < 3; i++) alphabetColor[i] = (uint8_t) (alphabetColor[i] * value);
+            multiplyColor(alphabetColor, value);
             setKeySetColor(alphabetKeys, alphabetKeyCount, alphabetColor[0], alphabetColor[1], alphabetColor[2]);
         } else {
             rgb_matrix_set_color(capsKeyIndex, RGB_OFF);
@@ -122,9 +131,10 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                 int keyCode = keymap_key_to_keycode(layer, (keypos_t){col,row});
 
                 if (keyCode > KC_TRNS) {
-                    rgb_matrix_set_color(index, RGB_CYAN);
-                } else {
-                    rgb_matrix_set_color(index, RGB_OFF);
+                    float value = getBreathingEffectMultiplier();
+                    uint8_t color[] = {RGB_CYAN};
+                    multiplyColor(color, value);
+                    rgb_matrix_set_color(index, color[0], color[1], color[2]);
                 }
             }
         }
