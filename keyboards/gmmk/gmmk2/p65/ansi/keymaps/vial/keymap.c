@@ -131,10 +131,7 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                 int keyCode = keymap_key_to_keycode(layer, (keypos_t){col,row});
 
                 if (keyCode > KC_TRNS) {
-                    float value = getBreathingEffectMultiplier();
-                    uint8_t color[] = {RGB_CYAN};
-                    multiplyColor(color, value);
-                    rgb_matrix_set_color(index, color[0], color[1], color[2]);
+                    rgb_matrix_set_color(index, RGB_RED);
                 }
             }
         }
